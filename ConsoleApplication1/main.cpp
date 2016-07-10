@@ -181,112 +181,88 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
-#include <stdlib.h>
 #include <string>
-#include <SFML/System.hpp>
+#include <vector>
+
+using namespace sf;
 
 bool gameOver = false;
 const int width = 500, height = 500;
-double x = 0.0, y = 0.0;
-int foodX, foodY, score = 0, i, j, k;
+double x = 0.0, y = 0.0, speedInc = 1.0;
+int score = 0, i, j, k;
 int nTail;
 int latch = 0;
-sf::Vector2f tails[100];
-sf::RectangleShape head(sf::Vector2f(10, 10));
-sf::RectangleShape tail(sf::Vector2f(10, 10));
-sf::CircleShape food(10);
-sf::Font font;
-sf::Text text;
+std::vector<Vector2f> tails;
+Vector2f randomPosition;
+RectangleShape tail(Vector2f(10, 10));
+RectangleShape head(Vector2f(10, 10));
+CircleShape food(10);
+Font font;
+Text text;
+
+class tailSection {
+
+};
 
 void Setup()
 {
 	//Randomly places the food for the snake
-	foodX = rand() % width;
-	foodY = rand() % height;
+	randomPosition = Vector2f(rand() % width, rand() % height);
 }
 
 void Update()
 {
-	//collision between head and food: increment score and randomise food position
+	//collision between head and food: increment score and randomise food position and increase speed of snake
 	if (head.getGlobalBounds().intersects(food.getGlobalBounds()))
 	{
-		foodX = rand() % width;
-		foodY = rand() % height;
+		randomPosition = Vector2f(rand() % width, rand() % height);
 		//tail ++
 		score += 1;
+		speedInc += 0.05;
 	}
+
+	//Pass through walls
+	if (head.getPosition().x >= width)
+		head.setPosition(Vector2f(0, head.getPosition().y));
+	else if (head.getPosition().x < 0)
+		head.setPosition(Vector2f(width - 10, head.getPosition().y));
+	if (head.getPosition().y >= height)
+		head.setPosition(Vector2f(head.getPosition().x, 0));
+	else if (head.getPosition().y < 0)
+		head.setPosition(Vector2f(head.getPosition().x, height - 10));
 
 	//Print score
 	text.setString("Score: 000" + std::to_string(score));
 }
 
-void Logic()
-{
-//	int prevX = tailX[0];
-//	int prevY = tailY[0];
-	int prev2X, prev2Y;
-	//Tail is put in the position of the head
-//	tailX[0] = x;
-//	tailY[0] = y;
-	//Constantly update the tail and head position
-	for (int i = 1; i < nTail; i++)
-	{
-//		prev2X = tailX[i];
-//		prev2Y = tailY[i];
-//		tailX[i] = prevX;
-//		tailY[i] = prevY;
-//		prevX = prev2X;
-//		prevY = prev2Y;
-	}
-	
-	//If you want the walls to count as game over
-	//if (x > width || x < 0 || y > height || y < 0)
-	//gameOver = true;
-
-	//Pass through walls
-	if (head.getPosition().x >= width)
-		head.setPosition(sf::Vector2f(0, head.getPosition().y));
-	else if (head.getPosition().x < 0)
-		head.setPosition(sf::Vector2f(width - 10, head.getPosition().y));
-	if (head.getPosition().y >= height)
-		head.setPosition(sf::Vector2f(head.getPosition().x, 0));
-	else if (head.getPosition().y < 0)
-		head.setPosition(sf::Vector2f(head.getPosition().x, height - 10));
-	/*for (int i = 0; i < nTail; i++)
-		if (tailX[i] == x && tailY[i] == y)
-			gameOver = true;*/
-
-}
-
 void Input() {
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-		x = -0.1;
+	if (Keyboard::isKeyPressed(Keyboard::Left)) {
+		x = -0.1 * speedInc;
 		y = 0;
 	}
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-		x = 0.1;
+	else if (Keyboard::isKeyPressed(Keyboard::Right)) {
+		x = 0.1 * speedInc;
 		y = 0;
 	}
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-		y = -0.1;
+	else if (Keyboard::isKeyPressed(Keyboard::Up)) {
+		y = -0.1 * speedInc;
 		x = 0;
 	}
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-		y = 0.1;
+	else if (Keyboard::isKeyPressed(Keyboard::Down)) {
+		y = 0.1 * speedInc;
 		x = 0;
 	}
 }
 
 int main()
 {
-	//////////init
 	Setup();
 
-	sf::RenderWindow window(sf::VideoMode(500, 500), "Snake!");
+	RenderWindow window(VideoMode(500, 500), "Snake!");
 
-	head.setPosition(sf::Vector2f(250, 250));
+	head.setPosition(Vector2f(250, 250));
 
-	food.setFillColor(sf::Color::Red);
+	food.setFillColor(Color::Red);
 	
 	if (!font.loadFromFile("brickled.ttf"))
 	{
@@ -294,44 +270,25 @@ int main()
 	}
 	text.setFont(font);
 	text.setCharacterSize(10); // in pixels, not points!
-	text.setPosition(sf::Vector2f(0, 490));
-	text.setColor(sf::Color::White);
+	text.setPosition(Vector2f(0, 490));
+	text.setColor(Color::White);
 	
 	while (window.isOpen())
 	{
-		sf::Event event;
+		Event event;
 
 		while (window.pollEvent(event))
 		{
-			if (event.type == sf::Event::Closed)
+			if (event.type == Event::Closed)
 				window.close();
 		}
 
-	//////////update
 		Input();
-		Logic();
 		Update();
 
-		food.setPosition(sf::Vector2f(foodX, foodY));
-		head.move(sf::Vector2f(x, y));
+		food.setPosition(randomPosition);
+		head.move(Vector2f(x, y));
 
-		/*for (i = 0; i < height; i++)
-		{
-			for (j = 0; j < width; j++)
-			{
-				bool tailTest = false;
-				for (k = 0; k < nTail; k++)
-				{
-					if (tailX[k] == j && tailY[k] == i)
-					{
-						tail.setPosition(sf::Vector2f(i, j));
-						tailTest = true;
-					}
-				}
-			}
-		}*/
-
-	//////////draw
 		window.clear();
 		window.draw(food);
 		window.draw(tail);
