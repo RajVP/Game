@@ -193,7 +193,7 @@ int score = 0, i, j, k;
 int nTail;
 int latch = 0;
 std::vector<RectangleShape> tails;
-Vector2f randomPosition;
+Vector2f randomPosition, temp;
 RectangleShape rect(Vector2f(10, 10));
 CircleShape food(10);
 Font font;
@@ -205,6 +205,7 @@ void Setup()
 	randomPosition = Vector2f(rand() % width, rand() % height);
 
 	//create first snake section and centre
+	tails.push_back(RectangleShape(rect));
 	tails.push_back(RectangleShape(rect));
 	tails.at(0).setPosition(Vector2f(250, 250));
 
@@ -286,8 +287,13 @@ int main()
 		Update();
 
 		food.setPosition(randomPosition);
-		for (i = 0; i < tails.size(); i++)
-			tails.at(i).move(x, y);
+
+		temp = tails.at(0).getPosition();
+		tails.at(0).move(x, y);
+		for (i = tails.size() - 1; i >= 0; i--){
+			if (i != 0)
+				tails.at(i).setPosition(tails.at(i - 1).getPosition());
+		}
 
 		window.clear();
 		window.draw(food);
