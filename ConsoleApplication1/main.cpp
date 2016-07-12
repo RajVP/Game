@@ -107,10 +107,10 @@
 //	int prevX = tailX[0];
 //	int prevY = tailY[0];
 //	int prev2X, prev2Y;
-//	//Tail is put in the position of the head
+//	//Tail is put in the position of the rect
 //	tailX[0] = x;
 //	tailY[0] = y;
-//	//Constantly update the tail and head position
+//	//Constantly update the tail and rect position
 //	for (int i = 1; i < nTail; i++)
 //	{
 //		prev2X = tailX[i];
@@ -192,44 +192,47 @@ double x = 0.0, y = 0.0, speedInc = 1.0;
 int score = 0, i, j, k;
 int nTail;
 int latch = 0;
-std::vector<Vector2f> tails;
+std::vector<RectangleShape> tails;
 Vector2f randomPosition;
-RectangleShape tail(Vector2f(10, 10));
-RectangleShape head(Vector2f(10, 10));
+RectangleShape rect(Vector2f(10, 10));
 CircleShape food(10);
 Font font;
 Text text;
-
-class tailSection {
-
-};
 
 void Setup()
 {
 	//Randomly places the food for the snake
 	randomPosition = Vector2f(rand() % width, rand() % height);
+
+	//create first snake section and centre
+	tails.push_back(RectangleShape(rect));
+	tails.at(0).setPosition(Vector2f(250, 250));
+
+	food.setFillColor(Color::Red);
 }
 
 void Update()
 {
-	//collision between head and food: increment score and randomise food position and increase speed of snake
-	if (head.getGlobalBounds().intersects(food.getGlobalBounds()))
+	//collision between rect and food: increment score and randomise food position and increase speed of snake
+	if (tails.at(0).getGlobalBounds().intersects(food.getGlobalBounds()))
 	{
 		randomPosition = Vector2f(rand() % width, rand() % height);
-		//tail ++
+		tails.push_back(RectangleShape(rect));
 		score += 1;
 		speedInc += 0.05;
 	}
 
 	//Pass through walls
-	if (head.getPosition().x >= width)
-		head.setPosition(Vector2f(0, head.getPosition().y));
-	else if (head.getPosition().x < 0)
-		head.setPosition(Vector2f(width - 10, head.getPosition().y));
-	if (head.getPosition().y >= height)
-		head.setPosition(Vector2f(head.getPosition().x, 0));
-	else if (head.getPosition().y < 0)
-		head.setPosition(Vector2f(head.getPosition().x, height - 10));
+	for (i = 0; i < tails.size(); i++) {
+		if (tails.at(i).getPosition().x >= width)
+			tails.at(i).setPosition(Vector2f(0, tails.at(i).getPosition().y));
+		else if (tails.at(i).getPosition().x < 0)
+			tails.at(i).setPosition(Vector2f(width - 10, tails.at(i).getPosition().y));
+		if (tails.at(i).getPosition().y >= height)
+			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, 0));
+		else if (tails.at(i).getPosition().y < 0)
+			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, height - 10));
+	}
 
 	//Print score
 	text.setString("Score: 000" + std::to_string(score));
@@ -259,11 +262,7 @@ int main()
 	Setup();
 
 	RenderWindow window(VideoMode(500, 500), "Snake!");
-
-	head.setPosition(Vector2f(250, 250));
-
-	food.setFillColor(Color::Red);
-	
+		
 	if (!font.loadFromFile("brickled.ttf"))
 	{
 		// error...
@@ -287,13 +286,14 @@ int main()
 		Update();
 
 		food.setPosition(randomPosition);
-		head.move(Vector2f(x, y));
+		for (i = 0; i < tails.size(); i++)
+			tails.at(i).move(x, y);
 
 		window.clear();
 		window.draw(food);
-		window.draw(tail);
-		window.draw(head);
 		window.draw(text);
+		for (i = 0; i < tails.size(); i++)
+			window.draw(tails.at(i));
 		window.display();
 	}
 
