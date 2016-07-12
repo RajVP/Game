@@ -194,8 +194,8 @@ int nTail;
 int latch = 0;
 std::vector<RectangleShape> tails;
 Vector2f randomPosition, temp;
-RectangleShape rect(Vector2f(10, 10));
-CircleShape food(10);
+RectangleShape rect(Vector2f(2, 2));
+CircleShape food(5);
 Font font;
 Text text;
 
@@ -228,11 +228,11 @@ void Update()
 		if (tails.at(i).getPosition().x >= width)
 			tails.at(i).setPosition(Vector2f(0, tails.at(i).getPosition().y));
 		else if (tails.at(i).getPosition().x < 0)
-			tails.at(i).setPosition(Vector2f(width - 10, tails.at(i).getPosition().y));
+			tails.at(i).setPosition(Vector2f(width - tails.at(i).getSize().x, tails.at(i).getPosition().y));
 		if (tails.at(i).getPosition().y >= height)
 			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, 0));
 		else if (tails.at(i).getPosition().y < 0)
-			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, height - 10));
+			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, height - tails.at(i).getSize().y));
 	}
 
 	//Print score
@@ -240,19 +240,19 @@ void Update()
 }
 
 void Input() {
-	if (Keyboard::isKeyPressed(Keyboard::Left)) {
+	if (Keyboard::isKeyPressed(Keyboard::Left) && x<=0) {
 		x = -0.1 * speedInc;
 		y = 0;
 	}
-	else if (Keyboard::isKeyPressed(Keyboard::Right)) {
+	else if (Keyboard::isKeyPressed(Keyboard::Right) && x>=0) {
 		x = 0.1 * speedInc;
 		y = 0;
 	}
-	else if (Keyboard::isKeyPressed(Keyboard::Up)) {
+	else if (Keyboard::isKeyPressed(Keyboard::Up) && y <= 0) {
 		y = -0.1 * speedInc;
 		x = 0;
 	}
-	else if (Keyboard::isKeyPressed(Keyboard::Down)) {
+	else if (Keyboard::isKeyPressed(Keyboard::Down) && y >= 0) {
 		y = 0.1 * speedInc;
 		x = 0;
 	}
