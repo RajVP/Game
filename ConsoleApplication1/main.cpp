@@ -202,7 +202,7 @@ Text text;
 void Setup()
 {
 	//Randomly places the food for the snake
-	randomPosition = Vector2f(rand() % width, rand() % height);
+	randomPosition = Vector2f(rand() % width - food.getGlobalBounds().width, rand() % height - food.getGlobalBounds().height);
 
 	//create first snake section and centre
 	tails.push_back(RectangleShape(rect));
@@ -228,11 +228,11 @@ void Update()
 		if (tails.at(i).getPosition().x >= width)
 			tails.at(i).setPosition(Vector2f(0, tails.at(i).getPosition().y));
 		else if (tails.at(i).getPosition().x < 0)
-			tails.at(i).setPosition(Vector2f(width - tails.at(i).getSize().x, tails.at(i).getPosition().y));
+			tails.at(i).setPosition(Vector2f(width - tails.at(i).getGlobalBounds().width, tails.at(i).getPosition().y));
 		if (tails.at(i).getPosition().y >= height)
 			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, 0));
 		else if (tails.at(i).getPosition().y < 0)
-			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, height - tails.at(i).getSize().y));
+			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, height - tails.at(i).getGlobalBounds().height));
 	}
 
 	//Print score
