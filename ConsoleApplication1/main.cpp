@@ -189,28 +189,31 @@ using namespace sf;
 
 bool gameOver = false;
 const int width = 500, height = 500;
-double x = 0.0, y = 0.0, speedInc = 0.0;
-int score = 0, i, j, k;
+double x, y, speedInc;
+int score, i;
 int nTail;
 int latch = 0;
 std::vector<RectangleShape> tails;
 Vector2f randomPosition;
 RectangleShape rect(Vector2f(50, 50));
 RectangleShape food(Vector2f(50, 50));
+RectangleShape flash(Vector2f(width, height));
 Font font;
 Text text;
 
 void Setup()
 {
-	//Randomly places the food for the snake
-	//randomPosition = Vector2f(rand() % width, rand() % height);
-	randomPosition = Vector2f((rand() % int(width / food.getSize().x))*food.getSize().x, (rand() % int(height / food.getSize().y))*food.getSize().y);
+	score = 0;
+	x = 0.0;
+	speedInc = 0.0;
+	tails.clear();
+	y= -rect.getGlobalBounds().width; //go up
 
 	//create first snake section and centre
-	tails.push_back(RectangleShape(rect));
-	tails.at(0).setPosition(Vector2f(250, 250));
-
-	food.setFillColor(Color::Red);
+	for (i = 0; i <= 1; i++) {
+		tails.push_back(RectangleShape(rect));
+		tails.at(i).setPosition(Vector2f(400, 300+i*rect.getGlobalBounds().height));
+	}
 }
 
 void Update()
@@ -227,8 +230,19 @@ void Update()
 			speedInc = 1;
 	}
 
+	Vector2f headPosition = tails.at(0).getPosition();
+
+	//collision with snake
+	for (i = 0; i < tails.size(); i++)
+		if (headPosition == tails.at(i).getPosition() && i >= 2)
+			Setup();
+
+	//die on collision
+	if (headPosition.x >= width || headPosition.x < 0 || headPosition.y >= height || headPosition.y < 0)
+		Setup();
+
 	//Pass through walls
-	for (i = 0; i < tails.size(); i++) {
+	/*for (i = 0; i < tails.size(); i++) {
 		if (tails.at(i).getPosition().x >= width)
 			tails.at(i).setPosition(Vector2f(0, tails.at(i).getPosition().y));
 		if (tails.at(i).getPosition().x < 0)
@@ -237,7 +251,7 @@ void Update()
 			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, 0));
 		if (tails.at(i).getPosition().y < 0)
 			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, height - tails.at(i).getGlobalBounds().height));
-	}
+	}*/
 
 	//Print score
 	text.setString("Score: 000" + std::to_string(score));
@@ -265,6 +279,11 @@ void Input() {
 int main()
 {
 	Setup();
+	//Randomly places the food for the snake
+	//randomPosition = Vector2f(rand() % width, rand() % height);
+	randomPosition = Vector2f((rand() % int(width / food.getSize().x))*food.getSize().x, (rand() % int(height / food.getSize().y))*food.getSize().y);
+
+	food.setFillColor(Color::Red);
 
 	RenderWindow window(VideoMode(500, 500), "Snake!");
 		
@@ -289,7 +308,6 @@ int main()
 
 		Input();
 		Update();
-
 		food.setPosition(randomPosition);
 
 		tails.at(0).move(x, y);
