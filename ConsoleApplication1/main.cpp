@@ -200,6 +200,7 @@ RectangleShape food(Vector2f(50, 50));
 RectangleShape flash(Vector2f(width, height));
 Font font;
 Text text;
+bool foodIsBlocked;
 
 void Setup()
 {
@@ -221,11 +222,26 @@ void Update()
 	//collision between rect and food: increment score and randomise food position and increase speed of snake
 	if (tails.at(0).getGlobalBounds().intersects(food.getGlobalBounds()))
 	{
-		randomPosition = Vector2f((rand() % int(width / food.getSize().x))*food.getSize().x, (rand() % int(height / food.getSize().y))*food.getSize().y);
+		//randomPosition = Vector2f((rand() % int(width / food.getSize().x))*food.getSize().x, (rand() % int(height / food.getSize().y))*food.getSize().y);
+		foodIsBlocked = true;
+
+		while (foodIsBlocked) {
+			randomPosition = Vector2f((rand() % int(width / food.getSize().x))*food.getSize().x, (rand() % int(height / food.getSize().y))*food.getSize().y);
+			for (i = 0; i < tails.size(); i++)
+				if (randomPosition == tails.at(i).getPosition()) {
+					foodIsBlocked = true;
+					break;
+				}
+				else {
+					foodIsBlocked = false;
+				}
+
+		}		
+		food.setPosition(randomPosition);
 		tails.push_back(RectangleShape(rect));
 		score += 1;
 		if (speedInc >= 1)
-			speedInc++;
+			speedInc+=10;
 		else
 			speedInc = 1;
 	}
@@ -283,7 +299,22 @@ int main()
 	Setup();
 	//Randomly places the food for the snake
 	//randomPosition = Vector2f(rand() % width, rand() % height);
-	randomPosition = Vector2f((rand() % int(width / food.getSize().x))*food.getSize().x, (rand() % int(height / food.getSize().y))*food.getSize().y);
+	//randomPosition = Vector2f((rand() % int(width / food.getSize().x))*food.getSize().x, (rand() % int(height / food.getSize().y))*food.getSize().y);
+	
+	/*foodIsBlocked = true;
+
+	while (foodIsBlocked) {
+		randomPosition = Vector2f((rand() % int(width / food.getSize().x))*food.getSize().x, (rand() % int(height / food.getSize().y))*food.getSize().y);
+		for (i = 0; i < tails.size(); i++)
+			if (randomPosition == tails.at(i).getPosition()) {
+				foodIsBlocked = true;
+			}
+			else {
+				foodIsBlocked = false;
+				break;
+			}
+
+	}*/
 
 	food.setFillColor(Color::Red);
 
@@ -310,7 +341,8 @@ int main()
 
 		Input();
 		Update();
-		food.setPosition(randomPosition);
+
+		//food.setPosition(randomPosition);
 
 		tails.at(0).move(x, y);
 		for (i = tails.size() - 1; i >= 0; i--){
