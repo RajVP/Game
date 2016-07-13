@@ -183,29 +183,30 @@
 #include <SFML/Window.hpp>
 #include <string>
 #include <vector>
+#include <Windows.h>
 
 using namespace sf;
 
 bool gameOver = false;
 const int width = 500, height = 500;
-double x = 0.0, y = 0.0, speedInc = 1.0;
+double x = 0.0, y = 0.0, speedInc = 0.0;
 int score = 0, i, j, k;
 int nTail;
 int latch = 0;
 std::vector<RectangleShape> tails;
-Vector2f randomPosition, temp;
-RectangleShape rect(Vector2f(2, 2));
-CircleShape food(5);
+Vector2f randomPosition;
+RectangleShape rect(Vector2f(50, 50));
+RectangleShape food(Vector2f(50, 50));
 Font font;
 Text text;
 
 void Setup()
 {
 	//Randomly places the food for the snake
-	randomPosition = Vector2f(rand() % width - food.getGlobalBounds().width, rand() % height - food.getGlobalBounds().height);
+	//randomPosition = Vector2f(rand() % width, rand() % height);
+	randomPosition = Vector2f((rand() % int(width / food.getSize().x))*food.getSize().x, (rand() % int(height / food.getSize().y))*food.getSize().y);
 
 	//create first snake section and centre
-	tails.push_back(RectangleShape(rect));
 	tails.push_back(RectangleShape(rect));
 	tails.at(0).setPosition(Vector2f(250, 250));
 
@@ -217,21 +218,24 @@ void Update()
 	//collision between rect and food: increment score and randomise food position and increase speed of snake
 	if (tails.at(0).getGlobalBounds().intersects(food.getGlobalBounds()))
 	{
-		randomPosition = Vector2f(rand() % width, rand() % height);
+		randomPosition = Vector2f((rand() % int(width / food.getSize().x))*food.getSize().x, (rand() % int(height / food.getSize().y))*food.getSize().y);
 		tails.push_back(RectangleShape(rect));
 		score += 1;
-		speedInc += 0.05;
+		if (speedInc >= 1)
+			speedInc++;
+		else
+			speedInc = 1;
 	}
 
 	//Pass through walls
 	for (i = 0; i < tails.size(); i++) {
 		if (tails.at(i).getPosition().x >= width)
 			tails.at(i).setPosition(Vector2f(0, tails.at(i).getPosition().y));
-		else if (tails.at(i).getPosition().x < 0)
+		if (tails.at(i).getPosition().x < 0)
 			tails.at(i).setPosition(Vector2f(width - tails.at(i).getGlobalBounds().width, tails.at(i).getPosition().y));
 		if (tails.at(i).getPosition().y >= height)
 			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, 0));
-		else if (tails.at(i).getPosition().y < 0)
+		if (tails.at(i).getPosition().y < 0)
 			tails.at(i).setPosition(Vector2f(tails.at(i).getPosition().x, height - tails.at(i).getGlobalBounds().height));
 	}
 
@@ -241,19 +245,19 @@ void Update()
 
 void Input() {
 	if (Keyboard::isKeyPressed(Keyboard::Left) && x<=0) {
-		x = -0.1 * speedInc;
+		x = -rect.getGlobalBounds().width;
 		y = 0;
 	}
 	else if (Keyboard::isKeyPressed(Keyboard::Right) && x>=0) {
-		x = 0.1 * speedInc;
+		x = rect.getGlobalBounds().width;
 		y = 0;
 	}
 	else if (Keyboard::isKeyPressed(Keyboard::Up) && y <= 0) {
-		y = -0.1 * speedInc;
+		y = -rect.getGlobalBounds().height;
 		x = 0;
 	}
 	else if (Keyboard::isKeyPressed(Keyboard::Down) && y >= 0) {
-		y = 0.1 * speedInc;
+		y = rect.getGlobalBounds().height;
 		x = 0;
 	}
 }
@@ -288,11 +292,11 @@ int main()
 
 		food.setPosition(randomPosition);
 
-		temp = tails.at(0).getPosition();
 		tails.at(0).move(x, y);
 		for (i = tails.size() - 1; i >= 0; i--){
-			if (i != 0)
-				tails.at(i).setPosition(tails.at(i - 1).getPosition());
+			if (i != 0) {
+					tails.at(i).setPosition(tails.at(i - 1).getPosition());
+			}
 		}
 
 		window.clear();
@@ -301,6 +305,8 @@ int main()
 		for (i = 0; i < tails.size(); i++)
 			window.draw(tails.at(i));
 		window.display();
+
+		Sleep(500-speedInc);
 	}
 
 	return 0;
