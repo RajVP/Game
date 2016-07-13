@@ -234,14 +234,16 @@ void Update()
 
 	//collision with snake
 	for (i = 0; i < tails.size(); i++)
-		if (headPosition == tails.at(i).getPosition() && i >= 2)
+		if (tails.at(0).getGlobalBounds().intersects(tails.at(i).getGlobalBounds()) && i >= 2)
 			Setup();
+		/*if (headPosition == tails.at(i).getPosition() && i >= 2) //another way of doing it
+			Setup();*/
 
 	//die on collision
 	if (headPosition.x >= width || headPosition.x < 0 || headPosition.y >= height || headPosition.y < 0)
 		Setup();
 
-	//Pass through walls
+	//Pass through walls (kinda glitchy after the snake passes the wall?)
 	/*for (i = 0; i < tails.size(); i++) {
 		if (tails.at(i).getPosition().x >= width)
 			tails.at(i).setPosition(Vector2f(0, tails.at(i).getPosition().y));
